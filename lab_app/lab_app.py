@@ -135,7 +135,7 @@ def get_records():
 		from_date_utc   = arrow.get(from_date_obj, timezone).to('Etc/UTC').strftime("%Y-%m-%d %H:%M")	
 		to_date_utc     = arrow.get(to_date_obj, timezone).to('Etc/UTC').strftime("%Y-%m-%d %H:%M")
 
-	conn 			    = sqlite3.connect('/var/www/lab_app/lab_app.db')
+	conn 			    = sqlite3.connect('lab_app.db')
 	curs 			    = conn.cursor()
 	curs.execute("SELECT * FROM temperatures WHERE rDateTime BETWEEN ? AND ?", (from_date_utc.format('YYYY-MM-DD HH:mm'), to_date_utc.format('YYYY-MM-DD HH:mm')))
 	temperatures 	    = curs.fetchall()
