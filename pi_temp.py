@@ -64,7 +64,7 @@ def lab_temp():
 		return render_template("no_sensor.html")
 
 @app.route("/history", methods=['GET'])  #Add date limits in the URL #Arguments: from=2015-03-04&to=2015-03-05
-def pi_temp_db():
+def history():
 	temperatures, humidities, timezone, from_date_str, to_date_str = get_records()
 
 	# Create new record tables so that datetimes are adjusted back to the user browser's time zone.
