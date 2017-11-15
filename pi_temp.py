@@ -48,6 +48,8 @@ from flask import Flask, request, render_template
 import time
 import datetime
 import arrow
+import plotly.plotly as py
+from plotly.graph_objs import *
 
 app = Flask(__name__)
 app.debug = True # Make this False if you are no longer debugging
@@ -143,9 +145,6 @@ def get_records():
 
 @app.route("/to_plotly", methods=['GET'])  #This method will send the data to ploty.
 def to_plotly():
-	import plotly.plotly as py
-	from plotly.graph_objs import *
-
 	temperatures, humidities, timezone, from_date_str, to_date_str = get_records()
 
 	# Create new record tables so that datetimes are adjusted back to the user browser's time zone.
