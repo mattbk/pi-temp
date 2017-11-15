@@ -53,22 +53,18 @@ app = Flask(__name__)
 app.debug = True # Make this False if you are no longer debugging
 
 @app.route("/")
-def hello():
-    return "Hello World!"
-
-@app.route("/lab_temp")
 def lab_temp():
 	import sys
 	import Adafruit_DHT
 	humidity, temperature = Adafruit_DHT.read_retry(Adafruit_DHT.AM2302, 17)
 	temperature = temperature * 9/5.0 + 32
 	if humidity is not None and temperature is not None:
-		return render_template("lab_temp.html",temp=temperature,hum=humidity)
+		return render_template("live.html",temp=temperature,hum=humidity)
 	else:
 		return render_template("no_sensor.html")
 
-@app.route("/lab_env_db", methods=['GET'])  #Add date limits in the URL #Arguments: from=2015-03-04&to=2015-03-05
-def lab_env_db():
+@app.route("/history", methods=['GET'])  #Add date limits in the URL #Arguments: from=2015-03-04&to=2015-03-05
+def pi_temp_db():
 	temperatures, humidities, timezone, from_date_str, to_date_str = get_records()
 
 	# Create new record tables so that datetimes are adjusted back to the user browser's time zone.
@@ -82,9 +78,9 @@ def lab_env_db():
 		local_timedate = arrow.get(record[0], "YYYY-MM-DD HH:mm").to(timezone)
 		time_adjusted_humidities.append([local_timedate.format('YYYY-MM-DD HH:mm'), round(record[2],2)])
 
-	print "rendering lab_env_db.html with: %s, %s, %s" % (timezone, from_date_str, to_date_str)
+	print "rendering history.html with: %s, %s, %s" % (timezone, from_date_str, to_date_str)
 
-	return render_template("lab_env_db.html",	timezone		= timezone,
+	return render_template("history.html",	timezone		= timezone,
 												temp 			= time_adjusted_temperatures,
 												hum 			= time_adjusted_humidities, 
 												from_date 		= from_date_str, 
@@ -135,7 +131,7 @@ def get_records():
 		from_date_utc   = arrow.get(from_date_obj, timezone).to('Etc/UTC').strftime("%Y-%m-%d %H:%M")	
 		to_date_utc     = arrow.get(to_date_obj, timezone).to('Etc/UTC').strftime("%Y-%m-%d %H:%M")
 
-	conn 			    = sqlite3.connect('lab_app.db')
+	conn 			    = sqlite3.connect('pi_temp.db')
 	curs 			    = conn.cursor()
 	curs.execute("SELECT * FROM temperatures WHERE rDateTime BETWEEN ? AND ?", (from_date_utc.format('YYYY-MM-DD HH:mm'), to_date_utc.format('YYYY-MM-DD HH:mm')))
 	temperatures 	    = curs.fetchall()
