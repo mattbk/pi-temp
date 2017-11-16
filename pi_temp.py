@@ -48,7 +48,8 @@ from flask import Flask, request, render_template
 import time
 import datetime
 import arrow
-import plotly.plotly as py
+import json
+import plotly
 from plotly.graph_objs import *
 
 app = Flask(__name__)
@@ -81,6 +82,63 @@ def history():
 		time_adjusted_humidities.append([local_timedate.format('YYYY-MM-DD HH:mm'), round(record[2],2)])
 
 	print "rendering history.html with: %s, %s, %s" % (timezone, from_date_str, to_date_str)
+	
+	# Create new record tables so that datetimes are adjusted back to the user browser's time zone.
+	time_series_adjusted_tempreratures  = []
+	time_series_adjusted_humidities 	= []
+	time_series_temprerature_values 	= []
+	time_series_humidity_values 		= []
+
+	for record in temperatures:
+		local_timedate = arrow.get(record[0], "YYYY-MM-DD HH:mm").to(timezone)
+		time_series_adjusted_tempreratures.append(local_timedate.format('YYYY-MM-DD HH:mm'))
+		time_series_temprerature_values.append(round(record[2],2))
+
+	for record in humidities:
+		local_timedate = arrow.get(record[0], "YYYY-MM-DD HH:mm").to(timezone)
+		time_series_adjusted_humidities.append(local_timedate.format('YYYY-MM-DD HH:mm')) #Best to pass datetime in text
+																						  #so that Plotly respects it
+		time_series_humidity_values.append(round(record[2],2))
+
+	
+	temp = Scatter(
+        		x=time_series_adjusted_tempreratures,
+        		y=time_series_temprerature_values,
+        		name='Temperature'
+    				)
+	hum = Scatter(
+        		x=time_series_adjusted_humidities,
+        		y=time_series_humidity_values,
+        		name='Humidity',
+        		yaxis='y2'
+    				)
+
+	data = Data([temp, hum])
+
+	layout = Layout(
+					title="Temperature and Humidity in Clayton's Apartment",
+				    xaxis=XAxis(
+				        type='date',
+				        autorange=True
+				    ),
+				    yaxis=YAxis(
+				    	title='Fahrenheit',
+				        type='linear',
+				        autorange=True
+				    ),
+				    yaxis2=YAxis(
+				    	title='Percent',
+				        type='linear',
+				        autorange=True,
+				        overlaying='y',
+				        side='right'
+				    )
+
+					)
+
+	fig = Figure(data=data, layout=layout)
+	#plot_url = py.plot(fig, filename='lab_temp_hum')
+	graphJSON = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
 
 	return render_template("history.html",	timezone		= timezone,
 												temp 			= time_adjusted_temperatures,
@@ -90,7 +148,8 @@ def history():
 												temp_items 		= len(temperatures),
 												query_string	= request.query_string, #This query string is used
 																						#by the Plotly link
-												hum_items 		= len(humidities))
+												hum_items 		= len(humidities),
+												graphJSON=graphJSON)
 
 def get_records():
 	import sqlite3
@@ -198,10 +257,12 @@ def to_plotly():
 				    )
 
 					)
-	fig = Figure(data=data, layout=layout)
-	plot_url = py.plot(fig, filename='lab_temp_hum')
 
-	return plot_url
+	fig = Figure(data=data, layout=layout)
+	#plot_url = py.plot(fig, filename='lab_temp_hum')
+	graphJSON = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
+
+	return graphJSON
 
 def validate_date(d):
     try:
