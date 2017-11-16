@@ -150,7 +150,8 @@
         jQuery(".timezone").val(timezone.name()); 
         jQuery("#range_select").submit();
       });
-
+      
+      
     jQuery("#plotly").click(function(){
       jQuery("#plotly_wait").text("Sending data...");
       jQuery("#plotly_url").text("");
@@ -164,16 +165,15 @@
 	  });
 	      return false; //This is so that the click on the link does not cause the page to refresh
 	});
+
     </script>
- 
-  <script type="text/javascript" src="https://www.google.com/jsapi?autoload={'modules':[{'name':'visualization','version':'1','packages':['corechart']}]}"></script>
+      
+<script type="text/javascript" src="https://www.google.com/jsapi?autoload={'modules':[{'name':'visualization','version':'1','packages':['corechart']}]}"></script>
  
       <script>
        google.load('visualization', '1', {packages: ['corechart']});
     google.setOnLoadCallback(drawChart);
-
     function drawChart() {
-
       var data = new google.visualization.DataTable();
       data.addColumn('datetime', 'Time');  
       data.addColumn('number', 'Temperature');      
@@ -182,7 +182,6 @@
             [new Date({{row[0][0:4]}},{{row[0][5:7]}}-1,{{row[0][8:10]}},{{row[0][11:13]}},{{row[0][14:16]}}),{{'%0.2f'|format(row[1])}}],
           {% endfor %}
         ]);
-
       var options = {
         width: 600,
         height: 563,
@@ -196,21 +195,15 @@
         title: 'Temperature',
         curveType: 'function'  //Makes line curved
       };
-
       var chart = new google.visualization.LineChart(document.getElementById('chart_temps'));
-
       chart.draw(data, options);
-
     }
-
       </script>
  
 <script>
     google.load('visualization', '1', {packages: ['corechart']});
     google.setOnLoadCallback(drawChart);
-
     function drawChart() {
-
       var data = new google.visualization.DataTable();
       data.addColumn('datetime', 'Time');  
       data.addColumn('number', 'Humidity');      
@@ -219,7 +212,6 @@
             [new Date({{row[0][0:4]}},{{row[0][5:7]}}-1,{{row[0][8:10]}},{{row[0][11:13]}},{{row[0][14:16]}}),{{'%0.2f'|format(row[1])}}],
           {% endfor %}
         ]);
-
       var options = {
         width: 600,
         height: 563,
@@ -233,29 +225,29 @@
         title: 'Humidity',
         curveType: 'function'  //Makes line curved
       };
-
       var chart = new google.visualization.LineChart(document.getElementById('chart_humid'));
-
       chart.draw(data, options);
-
     }
-
-      </script>
+      </script> 
       
+<!-- 
 <div id='plotly-plot'></div> 
+
+{{ graphJSON }}
   <footer>
-      <!-- D3.js https://github.com/d3/d3/releases-->
+      <!~~ D3.js https://github.com/d3/d3/releases~~>
     <script src="static/javascript/d3.min.js"></script>
-    <!-- jQuery https://jquery.com/download/ -->
+    <!~~ jQuery https://jquery.com/download/ ~~>
     <script src="static/javascript/jquery-3.2.1.min.js"></script>
-    <!-- Plotly.js https://github.com/plotly/plotly.js/releases/ -->
+    <!~~ Plotly.js https://github.com/plotly/plotly.js/releases/ ~~>
     <script src="static/javascript/plotly.js"></script>
     
-    <!--Plot Scaled-D on results.html-->
+    <!~~Plot data~~>
     <script type="text/javascript">
 		var graph = {{graphJSON | safe}};
 		Plotly.plot('plotly-plot', graph.data, graph.layout);
     </script>
   </footer>
+ -->
  
 </html>
