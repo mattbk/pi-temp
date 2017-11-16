@@ -85,60 +85,60 @@ def history():
 	print "rendering history.html with: %s, %s, %s" % (timezone, from_date_str, to_date_str)
 	
 # 	Create new record tables so that datetimes are adjusted back to the user browser's time zone.
-# 	time_series_adjusted_temperatures  = []
-# 	time_series_adjusted_humidities 	= []
-# 	time_series_temperature_values 	= []
-# 	time_series_humidity_values 		= []
-# 
-# 	for record in temperatures:
-# 		local_timedate_series = arrow.get(record[0], "YYYY-MM-DD HH:mm").to(timezone)
-# 		time_series_adjusted_temperatures.append(local_timedate_series.format('YYYY-MM-DD HH:mm'))
-# 		time_series_temperature_values.append(round(record[2],2))
-# 
-# 	for record in humidities:
-# 		local_timedate_series = arrow.get(record[0], "YYYY-MM-DD HH:mm").to(timezone)
-# 		time_series_adjusted_humidities.append(local_timedate_series.format('YYYY-MM-DD HH:mm')) #Best to pass datetime in text
-# 																						  so that Plotly respects it
-# 		time_series_humidity_values.append(round(record[2],2))
-# 
-# 	
-# 	temp = Scatter(
-#         		x=time_series_adjusted_temperatures, 
-#         		y=time_series_temperature_values,
-#         		name='Temperature'
-#     				)
-# 	hum = Scatter(
-#         		x=time_series_adjusted_humidities,
-#         		y=time_series_humidity_values,
-#         		name='Humidity',
-#         		yaxis='y2'
-#     				)
-# 
-# 	data = Data([temp, hum])
-# 
-# 	layout = Layout(
-# 					title="Temperature and Humidity",
-# 				    xaxis=XAxis(
-# 				        type='date',
-# 				        autorange=True
-# 				    ),
-# 				    yaxis=YAxis(
-# 				    	title='Fahrenheit',
-# 				        type='linear',
-# 				        autorange=True
-# 				    ),
-# 				    yaxis2=YAxis(
-# 				    	title='Percent',
-# 				        type='linear',
-# 				        autorange=True,
-# 				        overlaying='y',
-# 				        side='right'
-# 				    )
-# 
-# 					)
-# 
-# 	fig = Figure(data=data, layout=layout)
-# 	graphJSON = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
+	time_series_adjusted_temperatures  = []
+	time_series_adjusted_humidities 	= []
+	time_series_temperature_values 	= []
+	time_series_humidity_values 		= []
+
+	for record in temperatures:
+		local_timedate_series = arrow.get(record[0], "YYYY-MM-DD HH:mm").to(timezone)
+		time_series_adjusted_temperatures.append(local_timedate_series.format('YYYY-MM-DD HH:mm'))
+		time_series_temperature_values.append(round(record[2],2))
+
+	for record in humidities:
+		local_timedate_series = arrow.get(record[0], "YYYY-MM-DD HH:mm").to(timezone)
+		time_series_adjusted_humidities.append(local_timedate_series.format('YYYY-MM-DD HH:mm')) #Best to pass datetime in text
+																						  #so that Plotly respects it
+		time_series_humidity_values.append(round(record[2],2))
+
+	
+	temp = Scatter(
+        		x=time_series_adjusted_temperatures, 
+        		y=time_series_temperature_values,
+        		name='Temperature'
+    				)
+	hum = Scatter(
+        		x=time_series_adjusted_humidities,
+        		y=time_series_humidity_values,
+        		name='Humidity',
+        		yaxis='y2'
+    				)
+
+	data = Data([temp, hum])
+
+	layout = Layout(
+					title="Temperature and Humidity",
+				    xaxis=XAxis(
+				        type='date',
+				        autorange=True
+				    ),
+				    yaxis=YAxis(
+				    	title='Fahrenheit',
+				        type='linear',
+				        autorange=True
+				    ),
+				    yaxis2=YAxis(
+				    	title='Percent',
+				        type='linear',
+				        autorange=True,
+				        overlaying='y',
+				        side='right'
+				    )
+
+					)
+
+	fig = Figure(data=data, layout=layout)
+	graphJSON = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
 
 	return render_template("history.html",	timezone		= timezone,
 												temp 			= time_adjusted_temperatures,
@@ -149,7 +149,7 @@ def history():
 												query_string	= request.query_string, #This query string is used
 																						#by the Plotly link
 												hum_items 		= len(humidities),
-												#graphJSON=graphJSON,
+												graphJSON=graphJSON,
 												)
 
 def get_records():

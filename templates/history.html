@@ -229,9 +229,7 @@
       chart.draw(data, options);
     }
       </script> 
-      
-<!-- 
-<div id='plotly-plot'></div> 
+<div id='plotly-plot'></div>
 
 {{ graphJSON }}
   <footer>
@@ -241,13 +239,12 @@
     <script src="static/javascript/jquery-3.2.1.min.js"></script>
     <!~~ Plotly.js https://github.com/plotly/plotly.js/releases/ ~~>
     <script src="static/javascript/plotly.js"></script>
-    
+
     <!~~Plot data~~>
     <script type="text/javascript">
-		var graph = {{graphJSON | safe}};
-		Plotly.plot('plotly-plot', graph.data, graph.layout);
+               var graph = {{graphJSON | safe}};
+               Plotly.plot('plotly-plot', graph.data, graph.layout);
     </script>
   </footer>
- -->
- 
-</html>
+
+-</html>      
