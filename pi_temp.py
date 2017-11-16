@@ -105,13 +105,15 @@ def history():
 	temp = Scatter(
         		x=time_series_adjusted_temperatures, 
         		y=time_series_temperature_values,
-        		name='Temperature'
+        		name='Temperature',
+                mode='lines',
+                line=Line(color='red')
     				)
 	hum = Scatter(
         		x=time_series_adjusted_humidities,
         		y=time_series_humidity_values,
         		name='Humidity',
-        		yaxis='y2'
+                line=Line(color='aqua')
     				)
 
 	data = Data([temp, hum])
@@ -123,18 +125,10 @@ def history():
 				        autorange=True
 				    ),
 				    yaxis=YAxis(
-				    	title='Fahrenheit',
+				    	title='Fahrenheit / Percent',
 				        type='linear',
 				        autorange=True
 				    ),
-				    yaxis2=YAxis(
-				    	title='Percent',
-				        type='linear',
-				        autorange=True,
-				        overlaying='y',
-				        side='right'
-				    )
-
 					)
 
 	fig = Figure(data=data, layout=layout)
