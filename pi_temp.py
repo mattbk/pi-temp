@@ -83,12 +83,10 @@ def history():
 	time_series_temperature_values 	= []
 	time_series_humidity_values 		= []
 
-	local_timedate_series = [change_tz(x) for x in temperatures]
-
-	#for record in temperatures:
-		#local_timedate_series = arrow.get(record[0], "YYYY-MM-DD HH:mm")
-		#time_series_adjusted_temperatures.append(local_timedate_series.format('YYYY-MM-DD HH:mm'))
-		#time_series_temperature_values.append(round(record[2],2))
+	for record in temperatures:
+		local_timedate_series = arrow.get(record[0], "YYYY-MM-DD HH:mm")
+		time_series_adjusted_temperatures.append(local_timedate_series.format('YYYY-MM-DD HH:mm'))
+		time_series_temperature_values.append(round(record[2],2))
 
 	for record in humidities:
 		local_timedate_series = arrow.get(record[0], "YYYY-MM-DD HH:mm")
