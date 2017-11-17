@@ -68,6 +68,12 @@ def lab_temp():
 		return render_template("no_sensor.html")
 
 @app.route("/history", methods=['GET'])  #Add date limits in the URL #Arguments: from=2015-03-04&to=2015-03-05
+def change_tz(record):
+	local_timedate_series = arrow.get(record[0], "YYYY-MM-DD HH:mm").to(timezone)
+	time_series_adjusted_temperatures.append(local_timedate_series.format('YYYY-MM-DD HH:mm'))
+	time_series_temperature_values.append(round(record[2],2))
+	return {'time':time_series_adjusted_temperatures,'value':time_series_temperature_values} #this is a dict
+
 def history():
 	temperatures, humidities, timezone, from_date_str, to_date_str = get_records()
 	
@@ -77,11 +83,12 @@ def history():
 	time_series_temperature_values 	= []
 	time_series_humidity_values 		= []
 
-	local_timedate_series = [arrow.get(record[0], "YYYY-MM-DD HH:mm").to(timezone) for record in temperatures]
-	for record in temperatures:
+	local_timedate_series = [change_tz(x) for x in temperatures]
+
+	#for record in temperatures:
 		#local_timedate_series = arrow.get(record[0], "YYYY-MM-DD HH:mm")
-		time_series_adjusted_temperatures.append(local_timedate_series.format('YYYY-MM-DD HH:mm'))
-		time_series_temperature_values.append(round(record[2],2))
+		#time_series_adjusted_temperatures.append(local_timedate_series.format('YYYY-MM-DD HH:mm'))
+		#time_series_temperature_values.append(round(record[2],2))
 
 	for record in humidities:
 		local_timedate_series = arrow.get(record[0], "YYYY-MM-DD HH:mm")
@@ -91,8 +98,8 @@ def history():
 
 	
 	temp = Scatter(
-        		x=time_series_adjusted_temperatures, 
-        		y=time_series_temperature_values,
+        		x=local_timedate_series['time'], 
+        		y=local_timedate_series['value'],
         		name='Temperature',
                 mode='lines',
                 line=Line(color='red')
