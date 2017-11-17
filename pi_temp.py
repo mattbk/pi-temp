@@ -71,6 +71,7 @@ def lab_temp():
 def history():
 	temperatures, humidities, timezone, from_date_str, to_date_str = get_records()
 
+    
 # 	Create new record tables so that datetimes are adjusted back to the user browser's time zone.
 	time_series_adjusted_temperatures  = []
 	time_series_adjusted_humidities 	= []
@@ -90,7 +91,7 @@ def history():
 
 	
 	temp = Scatter(
-				x=local_timedate_series, 
+				x=time_series_adjusted_temperatures, 
 				y=time_series_temperature_values,
 				name='Temperature',
 				mode='lines',
