@@ -70,19 +70,6 @@ def lab_temp():
 @app.route("/history", methods=['GET'])  #Add date limits in the URL #Arguments: from=2015-03-04&to=2015-03-05
 def history():
 	temperatures, humidities, timezone, from_date_str, to_date_str = get_records()
-
-	# Create new record tables so that datetimes are adjusted back to the user browser's time zone.
-	time_adjusted_temperatures = []
-	time_adjusted_humidities   = []
-	for record in temperatures:
-		local_timedate = arrow.get(record[0], "YYYY-MM-DD HH:mm").to(timezone)
-		time_adjusted_temperatures.append([local_timedate.format('YYYY-MM-DD HH:mm'), round(record[2],2)])
-
-	for record in humidities:
-		local_timedate = arrow.get(record[0], "YYYY-MM-DD HH:mm").to(timezone)
-		time_adjusted_humidities.append([local_timedate.format('YYYY-MM-DD HH:mm'), round(record[2],2)])
-
-	print "rendering history.html with: %s, %s, %s" % (timezone, from_date_str, to_date_str)
 	
 # 	Create new record tables so that datetimes are adjusted back to the user browser's time zone.
 	time_series_adjusted_temperatures  = []
@@ -134,17 +121,9 @@ def history():
 	fig = Figure(data=data, layout=layout)
 	graphJSON = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
 
-	return render_template("history.html",	timezone		= timezone,
-												temp 			= time_adjusted_temperatures,
-												hum 			= time_adjusted_humidities, 
-												from_date 		= from_date_str, 
-												to_date 		= to_date_str,
-												temp_items 		= len(temperatures),
-												query_string	= request.query_string, #This query string is used
-																						#by the Plotly link
-												hum_items 		= len(humidities),
-												graphJSON=graphJSON,
-												)
+	return render_template("history.html",	timezone = timezone,
+											graphJSON = graphJSON,
+											)
 
 def get_records():
 	from_date_str 	= request.args.get('from',time.strftime("%Y-%m-%d 00:00")) #Get the from date value from the URL
@@ -195,68 +174,6 @@ def get_records():
 	conn.close()
 
 	return [temperatures, humidities, timezone, from_date_str, to_date_str]
-
-@app.route("/to_plotly", methods=['GET'])  #This method will send the data to ploty.
-def to_plotly():
-	temperatures, humidities, timezone, from_date_str, to_date_str = get_records()
-
-	# Create new record tables so that datetimes are adjusted back to the user browser's time zone.
-	time_series_adjusted_tempreratures  = []
-	time_series_adjusted_humidities 	= []
-	time_series_temprerature_values 	= []
-	time_series_humidity_values 		= []
-
-	for record in temperatures:
-		local_timedate = arrow.get(record[0], "YYYY-MM-DD HH:mm").to(timezone)
-		time_series_adjusted_tempreratures.append(local_timedate.format('YYYY-MM-DD HH:mm'))
-		time_series_temprerature_values.append(round(record[2],2))
-
-	for record in humidities:
-		local_timedate = arrow.get(record[0], "YYYY-MM-DD HH:mm").to(timezone)
-		time_series_adjusted_humidities.append(local_timedate.format('YYYY-MM-DD HH:mm')) #Best to pass datetime in text
-																						  #so that Plotly respects it
-		time_series_humidity_values.append(round(record[2],2))
-
-	temp = Scatter(
-        		x=time_series_adjusted_tempreratures,
-        		y=time_series_temprerature_values,
-        		name='Temperature'
-    				)
-	hum = Scatter(
-        		x=time_series_adjusted_humidities,
-        		y=time_series_humidity_values,
-        		name='Humidity',
-        		yaxis='y2'
-    				)
-
-	data = Data([temp, hum])
-
-	layout = Layout(
-					title="Temperature and Humidity in Clayton's Apartment",
-				    xaxis=XAxis(
-				        type='date',
-				        autorange=True
-				    ),
-				    yaxis=YAxis(
-				    	title='Fahrenheit',
-				        type='linear',
-				        autorange=True
-				    ),
-				    yaxis2=YAxis(
-				    	title='Percent',
-				        type='linear',
-				        autorange=True,
-				        overlaying='y',
-				        side='right'
-				    )
-
-					)
-
-	fig = Figure(data=data, layout=layout)
-	#plot_url = py.plot(fig, filename='lab_temp_hum')
-	graphJSON = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
-
-	return graphJSON
 
 def validate_date(d):
     try:
