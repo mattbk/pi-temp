@@ -26,8 +26,9 @@
     <!~~ jQuery https://jquery.com/download/ ~~>
     <script src="static/javascript/jquery-3.2.1.min.js"></script>
     <!~~ Plotly.js https://github.com/plotly/plotly.js/releases/ ~~>
-    <script src="static/javascript/plotly.js"></script>
+    <script src="static/javascript/plotly-latest.min.js"></script>
     <script src="static/javascript/jquery.datetimepicker.full.js"></script>
+    <!~~ Apparently needed for range_h radio buttons? ~~>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jstimezonedetect/1.0.4/jstz.min.js" ></script>
   </head>
   <body>
@@ -77,61 +78,17 @@
       </div>
     </div>
     <div class='row' id='plotly-plot'></div>
-      <div class="row">
-        <div class="one-third column" style="margin-top: 5%">
-          <strong>Showing all records</strong>
-          <h2>Temperatures</h2>
-            <table class="u-full-width">
-              <thead style="display:block;">
-                <tr>
-                  <th>Date</th>
-                  <th>                              &deg;F</th>
-                </tr>
-              </thead>
-              <tbody style="height:450px; overflow:scroll; display:block;">
-                {% for row in temp %}
-                <tr>
-                  <td>{{row[0]}}</td>
-                  <td>{{'%0.2f'|format(row[1])}}</td>
-                </tr>
-                {% endfor %}
-              </tbody>
-            </table>
-            <h2>Humidities</h2>
-            <table class="u-full-width">
-              <thead style="display:block;">
-                <tr>
-                  <th>Date</th>
-                  <th>                              %</th>
-                </tr>
-              </thead>
-              <tbody style="height:450px; overflow:scroll; display:block;">
-                {% for row in hum %}
-                <tr>
-                  <td>{{row[0]}}</td>
-                  <td>{{'%0.2f'|format(row[1])}}</td>
-                </tr>
-                {% endfor %}
-              </tbody>
-            </table>
-        </div>
- 
-        <div class="two-thirds column" style="margin-top: 5%">
-        <div class="row">                  
-          <div class="row">
-            <div class="three columns">
-                <div id="chart_temps"></div>
-                <div id="chart_humid"></div>
-            </div>
-          </div>
-        </div>     
-      </div>
-    </div>
-  </body>
 
- 
- 
-  <script>
+  </body>
+      
+  <footer>
+    <!~~Plot data~~>
+    <script type="text/javascript">
+               var graph = {{graphJSON | safe}};
+               Plotly.plot('plotly-plot', graph.data, graph.layout);
+    </script>
+    
+      <script>
     jQuery( "#datetime_range" ).submit(function( event ) {
         timezone = jstz.determine();
         jQuery(".timezone").val(timezone.name());      
@@ -152,15 +109,6 @@
         jQuery(".timezone").val(timezone.name()); 
         jQuery("#range_select").submit();
       });
-    </script>
-      
-
-
-  <footer>
-    <!~~Plot data~~>
-    <script type="text/javascript">
-               var graph = {{graphJSON | safe}};
-               Plotly.plot('plotly-plot', graph.data, graph.layout);
     </script>
   </footer>
 
