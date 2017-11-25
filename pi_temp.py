@@ -58,123 +58,145 @@ app.debug = True # Make this False if you are no longer debugging
 
 @app.route("/")
 def lab_temp():
-	import sys
-	import Adafruit_DHT
-	humidity, temperature = Adafruit_DHT.read_retry(Adafruit_DHT.AM2302, 17)
-	temperature = temperature * 9/5.0 + 32
-	if humidity is not None and temperature is not None:
-		return render_template("live.html",temp=temperature,hum=humidity)
-	else:
-		return render_template("no_sensor.html")
+    import sys
+    import Adafruit_DHT
+    humidity, temperature = Adafruit_DHT.read_retry(Adafruit_DHT.AM2302, 17)
+    temperature = temperature * 9/5.0 + 32
+    if humidity is not None and temperature is not None:
+        return render_template("live.html",temp=temperature,hum=humidity)
+    else:
+        return render_template("no_sensor.html")
 
 @app.route("/history", methods=['GET'])  #Add date limits in the URL #Arguments: from=2015-03-04&to=2015-03-05
 def history():
-	temperatures, humidities, timezone, from_date_str, to_date_str = get_records()
+    temperatures, humidities, timezone, from_date_str, to_date_str, range_hours = get_records()
+    
+#   Create new record tables so that datetimes are adjusted back to the user browser's time zone.
+    time_series_adjusted_temperatures  = []
+    time_series_adjusted_humidities     = []
+    time_series_temperature_values  = []
+    time_series_humidity_values         = []
+
+    for record in temperatures:
+        local_timedate_series = arrow.get(record[0], "YYYY-MM-DD HH:mm")
+        time_series_adjusted_temperatures.append(local_timedate_series.format('YYYY-MM-DD HH:mm'))
+        time_series_temperature_values.append(round(record[2],2))
+
+    for record in humidities:
+        local_timedate_series = arrow.get(record[0], "YYYY-MM-DD HH:mm")
+        time_series_adjusted_humidities.append(local_timedate_series.format('YYYY-MM-DD HH:mm')) #Best to pass datetime in text
+                                                                                          #so that Plotly respects it
+        time_series_humidity_values.append(round(record[2],2))
 
     
-# 	Create new record tables so that datetimes are adjusted back to the user browser's time zone.
-	time_series_adjusted_temperatures  = []
-	time_series_adjusted_humidities 	= []
-	time_series_temperature_values 	= []
-	time_series_humidity_values 		= []
+    temp = Scatter(
+                x=time_series_adjusted_temperatures, 
+                y=time_series_temperature_values,
+                name='Temperature',
+                mode='lines',
+                line=Line(color='red')
+                    )
+    hum = Scatter(
+                x=time_series_adjusted_humidities,
+                y=time_series_humidity_values,
+                name='Humidity',
+                line=Line(color='aqua')
+                    )
 
-	for record in temperatures:
-		local_timedate_series = arrow.get(record[0], "YYYY-MM-DD HH:mm")
-		time_series_adjusted_temperatures.append(local_timedate_series.format('YYYY-MM-DD HH:mm'))
-		time_series_temperature_values.append(round(record[2],2))
+    data = Data([temp, hum])
 
-	for record in humidities:
-		local_timedate_series = arrow.get(record[0], "YYYY-MM-DD HH:mm")
-		time_series_adjusted_humidities.append(local_timedate_series.format('YYYY-MM-DD HH:mm')) #Best to pass datetime in text
-																						  #so that Plotly respects it
-		time_series_humidity_values.append(round(record[2],2))
+    layout = Layout(
+                    title="Temperature and Humidity",
+                    xaxis=XAxis(
+                        type='date',
+                        autorange=True
+                    ),
+                    yaxis=YAxis(
+                        title='Fahrenheit / Percent',
+                        type='linear',
+                        autorange=True
+                    ),
+                    )
 
-	
-	temp = Scatter(
-				x=time_series_adjusted_temperatures, 
-				y=time_series_temperature_values,
-				name='Temperature',
-				mode='lines',
-				line=Line(color='red')
-					)
-	hum = Scatter(
-				x=time_series_adjusted_humidities,
-				y=time_series_humidity_values,
-				name='Humidity',
-				line=Line(color='aqua')
-					)
-
-	data = Data([temp, hum])
-
-	layout = Layout(
-					title="Temperature and Humidity",
-					xaxis=XAxis(
-						type='date',
-						autorange=True
-					),
-					yaxis=YAxis(
-						title='Fahrenheit / Percent',
-						type='linear',
-						autorange=True
-					),
-					)
-
-	fig = Figure(data=data, layout=layout)
-	graphJSON = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
-
-	return render_template("history.html",	timezone = timezone,
-											graphJSON = graphJSON,
-											)
-
+    fig = Figure(data=data, layout=layout)
+    graphJSON = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
+    
+    ## Duration of significant heat increases
+    # Timestep from raw database values for temperature
+    timestep_minutes = (datetime.datetime.strptime(temperatures[1][0], "%Y-%m-%d %H:%M:%S")-datetime.datetime.strptime(temperatures[0][0], "%Y-%m-%d %H:%M:%S")).seconds/60
+    # Calculate minutes for each streak
+    streak_minutes = streak_lengths(time_series_temperature_values)*timestep_minutes
+    
+    # Send output to page
+    return render_template("history.html",  timezone = timezone,
+                                            graphJSON = graphJSON,
+                                            total_minutes = sum(streak_minutes),
+                                            range_hours = range_hours
+                                            )
+# Calculate streak lengths (https://stackoverflow.com/a/20614650/2152245)                                            
+def streak_lengths(temps):
+    if len(temps) < 2:
+        return len(temps)
+    else:
+        start, streaks = -1, []
+        for idx, (x, y) in enumerate(zip(temps, temps[1:])):
+            if x > y:
+                streaks.append(idx - start)
+                start = idx
+        else:
+            streaks.append(idx - start + 1) 
+        long_streaks = [x for x in streaks if x > 3]
+        return long_streaks
+        
 def get_records():
-	from_date_str 	= request.args.get('from',time.strftime("%Y-%m-%d 00:00")) #Get the from date value from the URL
-	to_date_str 	= request.args.get('to',time.strftime("%Y-%m-%d %H:%M"))   #Get the to date value from the URL
-	timezone 		= request.args.get('timezone','Etc/UTC');
-	range_h_form	= request.args.get('range_h','');  #This will return a string, if field range_h exists in the request
-	range_h_int 	= "nan"  #initialise this variable with not a number
+    from_date_str   = request.args.get('from',time.strftime("%Y-%m-%d 00:00")) #Get the from date value from the URL
+    to_date_str     = request.args.get('to',time.strftime("%Y-%m-%d %H:%M"))   #Get the to date value from the URL
+    timezone        = request.args.get('timezone','Etc/UTC');
+    range_h_form    = request.args.get('range_h','');  #This will return a string, if field range_h exists in the request
+    range_h_int     = "nan"  #initialise this variable with not a number
 
-	print "REQUEST:"
-	print request.args
-	
-	try: 
-		range_h_int	= int(range_h_form)
-	except:
-		print "range_h_form not a number"
+    print "REQUEST:"
+    print request.args
+    
+    try: 
+        range_h_int = int(range_h_form)
+    except:
+        print "range_h_form not a number"
 
 
-	print "Received from browser: %s, %s, %s, %s" % (from_date_str, to_date_str, timezone, range_h_int)
-	
-	if not validate_date(from_date_str):			# Validate date before sending it to the DB
-		from_date_str 	= time.strftime("%Y-%m-%d 00:00")
-	if not validate_date(to_date_str):
-		to_date_str 	= time.strftime("%Y-%m-%d %H:%M")		# Validate date before sending it to the DB
-	print '2. From: %s, to: %s, timezone: %s' % (from_date_str,to_date_str,timezone)
-	# Create datetime object so that we can convert to UTC from the browser's local time
-	from_date_obj       = datetime.datetime.strptime(from_date_str,'%Y-%m-%d %H:%M')
-	to_date_obj         = datetime.datetime.strptime(to_date_str,'%Y-%m-%d %H:%M')
+    print "Received from browser: %s, %s, %s, %s" % (from_date_str, to_date_str, timezone, range_h_int)
+    
+    if not validate_date(from_date_str):            # Validate date before sending it to the DB
+        from_date_str   = time.strftime("%Y-%m-%d 00:00")
+    if not validate_date(to_date_str):
+        to_date_str     = time.strftime("%Y-%m-%d %H:%M")       # Validate date before sending it to the DB
+    print '2. From: %s, to: %s, timezone: %s' % (from_date_str,to_date_str,timezone)
+    # Create datetime object so that we can convert to UTC from the browser's local time
+    from_date_obj       = datetime.datetime.strptime(from_date_str,'%Y-%m-%d %H:%M')
+    to_date_obj         = datetime.datetime.strptime(to_date_str,'%Y-%m-%d %H:%M')
 
-	# If range_h is defined, we don't need the from and to times
-	if isinstance(range_h_int,int):	
-		arrow_time_from = arrow.utcnow().replace(hours=-range_h_int)
-		arrow_time_to   = arrow.utcnow()
-		from_date_utc   = arrow_time_from.strftime("%Y-%m-%d %H:%M")	
-		to_date_utc     = arrow_time_to.strftime("%Y-%m-%d %H:%M")
-		from_date_str   = arrow_time_from.to(timezone).strftime("%Y-%m-%d %H:%M")
-		to_date_str	    = arrow_time_to.to(timezone).strftime("%Y-%m-%d %H:%M")
-	else:
-		#Convert datetimes to UTC so we can retrieve the appropriate records from the database
-		from_date_utc   = arrow.get(from_date_obj, timezone).to('Etc/UTC').strftime("%Y-%m-%d %H:%M")	
-		to_date_utc     = arrow.get(to_date_obj, timezone).to('Etc/UTC').strftime("%Y-%m-%d %H:%M")
+    # If range_h is defined, we don't need the from and to times
+    if isinstance(range_h_int,int): 
+        arrow_time_from = arrow.utcnow().replace(hours=-range_h_int)
+        arrow_time_to   = arrow.utcnow()
+        from_date_utc   = arrow_time_from.strftime("%Y-%m-%d %H:%M")    
+        to_date_utc     = arrow_time_to.strftime("%Y-%m-%d %H:%M")
+        from_date_str   = arrow_time_from.to(timezone).strftime("%Y-%m-%d %H:%M")
+        to_date_str     = arrow_time_to.to(timezone).strftime("%Y-%m-%d %H:%M")
+    else:
+        #Convert datetimes to UTC so we can retrieve the appropriate records from the database
+        from_date_utc   = arrow.get(from_date_obj, timezone).to('Etc/UTC').strftime("%Y-%m-%d %H:%M")   
+        to_date_utc     = arrow.get(to_date_obj, timezone).to('Etc/UTC').strftime("%Y-%m-%d %H:%M")
 
-	conn 			    = sqlite3.connect('pi_temp.db')
-	curs 			    = conn.cursor()
-	curs.execute("SELECT * FROM temperatures WHERE rDateTime BETWEEN ? AND ?", (from_date_utc.format('YYYY-MM-DD HH:mm'), to_date_utc.format('YYYY-MM-DD HH:mm')))
-	temperatures 	    = curs.fetchall()
-	curs.execute("SELECT * FROM humidities WHERE rDateTime BETWEEN ? AND ?", (from_date_utc.format('YYYY-MM-DD HH:mm'), to_date_utc.format('YYYY-MM-DD HH:mm')))
-	humidities 		    = curs.fetchall()
-	conn.close()
+    conn                = sqlite3.connect('pi_temp.db')
+    curs                = conn.cursor()
+    curs.execute("SELECT * FROM temperatures WHERE rDateTime BETWEEN ? AND ?", (from_date_utc.format('YYYY-MM-DD HH:mm'), to_date_utc.format('YYYY-MM-DD HH:mm')))
+    temperatures        = curs.fetchall()
+    curs.execute("SELECT * FROM humidities WHERE rDateTime BETWEEN ? AND ?", (from_date_utc.format('YYYY-MM-DD HH:mm'), to_date_utc.format('YYYY-MM-DD HH:mm')))
+    humidities          = curs.fetchall()
+    conn.close()
 
-	return [temperatures, humidities, timezone, from_date_str, to_date_str]
+    return [temperatures, humidities, timezone, from_date_str, to_date_str, range_h_int]
 
 def validate_date(d):
     try:
