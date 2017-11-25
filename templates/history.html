@@ -34,32 +34,32 @@
   <body>
     <div class="container">
       <div class="row">
-	      <form id="datetime_range" action="/history" method="GET"> 
-	        <!-- <div class="row">          -->
-	          <div class="three columns">
-	            <label for="from">From date</label>
-	            <input class="u-full-width" id="datetimepicker1" type="text" value="{{from_date}}" name="from">
-	          </div>
-	        <!-- </div> -->
-	        <!-- <div class="row"> -->
-	          <div class="three columns">
-	            <label for="to">To date</label>           
-	            <input class="u-full-width" id="datetimepicker2" type="text" value="{{to_date}}" name="to">
-	          </div>   
-	        <!-- </div>          -->
-	        <!-- <div class="row"> -->
-	          <div class="two columns">    
-	            <input type="hidden" class="timezone" name="timezone" />       
-	            <input class="button-primary" type="submit" value="Submit" style="position:relative; top: 28px" id="submit_button" />
-	          </div>
-	        <!-- </div> -->
-	      </form> 
+          <form id="datetime_range" action="/history" method="GET"> 
+            <!-- <div class="row">          -->
+              <div class="three columns">
+                <label for="from">From date</label>
+                <input class="u-full-width" id="datetimepicker1" type="text" value="{{from_date}}" name="from">
+              </div>
+            <!-- </div> -->
+            <!-- <div class="row"> -->
+              <div class="three columns">
+                <label for="to">To date</label>           
+                <input class="u-full-width" id="datetimepicker2" type="text" value="{{to_date}}" name="to">
+              </div>   
+            <!-- </div>          -->
+            <!-- <div class="row"> -->
+              <div class="two columns">    
+                <input type="hidden" class="timezone" name="timezone" />       
+                <input class="button-primary" type="submit" value="Submit" style="position:relative; top: 28px" id="submit_button" />
+              </div>
+            <!-- </div> -->
+          </form> 
       </div>
       <div class="row">
       <div class="eleven columns">
-      	<div class="one column">
-			    <a href="/">Live</a>
-       	</div>
+        <div class="one column">
+                <a href="/">Live</a>
+        </div>
         <form id="range_select" action = "/history" method="GET">  
           <input type="hidden" class="timezone" name="timezone" />      
           <div class="one column">
@@ -77,9 +77,10 @@
         </form>          
       </div>
     </div>
-    <div class='row' id='plotly-plot'></div>
     
-    {{ total_minutes }}
+    Furnace averaging {{ "%.2f" % (total_minutes/range_hours) }} minutes/hr ({{ total_minutes }} minutes total).
+
+    <div class='row' id='plotly-plot'></div>
 
   </body>
       

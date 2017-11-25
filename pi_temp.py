@@ -69,7 +69,7 @@ def lab_temp():
 
 @app.route("/history", methods=['GET'])  #Add date limits in the URL #Arguments: from=2015-03-04&to=2015-03-05
 def history():
-    temperatures, humidities, timezone, from_date_str, to_date_str = get_records()
+    temperatures, humidities, timezone, from_date_str, to_date_str, range_hours = get_records()
     
 #   Create new record tables so that datetimes are adjusted back to the user browser's time zone.
     time_series_adjusted_temperatures  = []
@@ -127,10 +127,11 @@ def history():
     # Calculate minutes for each streak
     streak_minutes = streak_lengths(time_series_temperature_values)*timestep_minutes
     
-
+    # Send output to page
     return render_template("history.html",  timezone = timezone,
                                             graphJSON = graphJSON,
                                             total_minutes = sum(streak_minutes),
+                                            range_hours = range_hours
                                             )
 # Calculate streak lengths (https://stackoverflow.com/a/20614650/2152245)                                            
 def streak_lengths(temps):
@@ -195,7 +196,7 @@ def get_records():
     humidities          = curs.fetchall()
     conn.close()
 
-    return [temperatures, humidities, timezone, from_date_str, to_date_str]
+    return [temperatures, humidities, timezone, from_date_str, to_date_str, range_h_int]
 
 def validate_date(d):
     try:
