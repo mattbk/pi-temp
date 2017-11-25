@@ -70,7 +70,6 @@ def lab_temp():
 @app.route("/history", methods=['GET'])  #Add date limits in the URL #Arguments: from=2015-03-04&to=2015-03-05
 def history():
     temperatures, humidities, timezone, from_date_str, to_date_str = get_records()
-
     
 #   Create new record tables so that datetimes are adjusted back to the user browser's time zone.
     time_series_adjusted_temperatures  = []
@@ -122,21 +121,24 @@ def history():
     fig = Figure(data=data, layout=layout)
     graphJSON = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
     
+    ## Duration of significant heat increases
+    # Timestep from raw database values for temperature
+    timestep_minutes = (datetime.datetime.strptime(temperatures[1][0], "%Y-%m-%d %H:%M:%S")-datetime.datetime.strptime(temperatures[0][0], "%Y-%m-%d %H:%M:%S")).seconds/60
+    # Calculate minutes for each streak
+    streak_minutes = streak_lengths(time_series_temperature_values)*timestep_minutes
     
-    x = time_series_temperature_values
-    result = longest_streak(x)
 
     return render_template("history.html",  timezone = timezone,
                                             graphJSON = graphJSON,
-                                            result = result,
+                                            total_minutes = sum(streak_minutes),
                                             )
-                                            
-def longest_streak(grades):
-    if len(grades) < 2:
-        return len(grades)
+# Calculate streak lengths (https://stackoverflow.com/a/20614650/2152245)                                            
+def streak_lengths(temps):
+    if len(temps) < 2:
+        return len(temps)
     else:
         start, streaks = -1, []
-        for idx, (x, y) in enumerate(zip(grades, grades[1:])):
+        for idx, (x, y) in enumerate(zip(temps, temps[1:])):
             if x > y:
                 streaks.append(idx - start)
                 start = idx
