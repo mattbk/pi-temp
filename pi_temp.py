@@ -120,7 +120,7 @@ def history():
 
     fig = Figure(data=data, layout=layout)
     graphJSON = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
-    
+
     ## Duration of significant heat increases
     # Timestep from raw database values for temperature
     timestep_minutes = int(round((datetime.datetime.strptime(temperatures[1][0], "%Y-%m-%d %H:%M:%S")-datetime.datetime.strptime(temperatures[0][0], "%Y-%m-%d %H:%M:%S")).seconds/60))
@@ -128,7 +128,8 @@ def history():
         timestep_minutes = 1
     # Calculate minutes for each streak
     streak_minutes = streak_lengths(time_series_temperature_values)*timestep_minutes
-    
+    streak_minutes = [x-1 for x in streak_minutes] #Turn this into a duration
+
     # Send output to page
     return render_template("history.html",  timezone = timezone,
                                             graphJSON = graphJSON,
@@ -136,21 +137,23 @@ def history():
                                             range_hours = range_hours,
                                             debug = streak_minutes,
                                             )
-# Calculate streak lengths (https://stackoverflow.com/a/20614650/2152245)                                            
-def streak_lengths(temps):
-    if len(temps) < 2:
-        return len(temps)
-    else:
-        start, streaks = -1, []
-        for idx, (x, y) in enumerate(zip(temps, temps[1:])):
-            if x > y:
-                streaks.append(idx - start)
-                start = idx 
-        else:
-            streaks.append(idx - start + 1) 
-        long_streaks = [x-1 for x in streaks if x > 4]
-        return long_streaks
-        
+
+# Calculate streak lengths. Based on https://stackoverflow.com/a/33403822/2152245.
+def streak_lengths(x): 
+    # find the boundaries where numbers are not consecutive
+    boundaries = [i for i in range(1, len(x)) if x[i] < x[i-1]]
+    # add the start and end boundaries
+    boundaries = [0] + boundaries + [len(x)]
+    # take the boundaries as pairwise slices
+    slices = [boundaries[i:i + 2] for i in range(len(boundaries) - 1)]
+    # extract all sequences with length greater than one
+    temporary = [x[start:end] for start, end in slices if end - start > 1]
+    # Remove tuples with all equal values
+    screened = [x for x in temporary if not all(y==x[0] for y in x)]
+    # Calculate length of each list
+    out = [len(x) for x in screened]
+    return out
+
 def get_records():
     from_date_str   = request.args.get('from',time.strftime("%Y-%m-%d 00:00")) #Get the from date value from the URL
     to_date_str     = request.args.get('to',time.strftime("%Y-%m-%d %H:%M"))   #Get the to date value from the URL
