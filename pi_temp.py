@@ -133,7 +133,8 @@ def history():
     return render_template("history.html",  timezone = timezone,
                                             graphJSON = graphJSON,
                                             total_minutes = sum(streak_minutes),
-                                            range_hours = range_hours
+                                            range_hours = range_hours,
+                                            debug = streak_minutes,
                                             )
 # Calculate streak lengths (https://stackoverflow.com/a/20614650/2152245)                                            
 def streak_lengths(temps):
@@ -144,10 +145,10 @@ def streak_lengths(temps):
         for idx, (x, y) in enumerate(zip(temps, temps[1:])):
             if x > y:
                 streaks.append(idx - start)
-                start = idx
+                start = idx 
         else:
             streaks.append(idx - start + 1) 
-        long_streaks = [x for x in streaks if x > 3]
+        long_streaks = [x-1 for x in streaks if x > 4]
         return long_streaks
         
 def get_records():
