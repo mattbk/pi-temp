@@ -141,7 +141,7 @@ def history():
 # Calculate streak lengths. Based on https://stackoverflow.com/a/33403822/2152245.
 def streak_lengths(x): 
     # find the boundaries where numbers are not consecutive
-    boundaries = [i for i in range(1, len(x)) if x[i] < x[i-1]]
+    boundaries = [i for i in range(1, len(x)) if x[i] <= x[i-1]]
     # add the start and end boundaries
     boundaries = [0] + boundaries + [len(x)]
     # take the boundaries as pairwise slices
