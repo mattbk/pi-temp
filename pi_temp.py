@@ -135,13 +135,15 @@ def history():
                                             graphJSON = graphJSON,
                                             total_minutes = sum(streak_minutes),
                                             range_hours = range_hours,
+                                            from_date = from_date_str, 
+ 											to_date = to_date_str,
                                             debug = streak_minutes,
                                             )
 
 # Calculate streak lengths. Based on https://stackoverflow.com/a/33403822/2152245.
 def streak_lengths(x): 
     # find the boundaries where numbers are not consecutive
-    boundaries = [i for i in range(1, len(x)) if x[i] < x[i-1]]
+    boundaries = [i for i in range(1, len(x)) if x[i] <= x[i-1]]
     # add the start and end boundaries
     boundaries = [0] + boundaries + [len(x)]
     # take the boundaries as pairwise slices
@@ -189,10 +191,13 @@ def get_records():
         to_date_utc     = arrow_time_to.strftime("%Y-%m-%d %H:%M")
         from_date_str   = arrow_time_from.to(timezone).strftime("%Y-%m-%d %H:%M")
         to_date_str     = arrow_time_to.to(timezone).strftime("%Y-%m-%d %H:%M")
+        range_hours     = range_h_int
     else:
         #Convert datetimes to UTC so we can retrieve the appropriate records from the database
         from_date_utc   = arrow.get(from_date_obj, timezone).to('Etc/UTC').strftime("%Y-%m-%d %H:%M")   
         to_date_utc     = arrow.get(to_date_obj, timezone).to('Etc/UTC').strftime("%Y-%m-%d %H:%M")
+        difference      = (arrow.get(to_date_obj, timezone) - arrow.get(from_date_obj, timezone))
+        range_hours     = (difference.total_seconds()) / 3600
 
     conn                = sqlite3.connect('pi_temp.db')
     curs                = conn.cursor()
@@ -202,7 +207,7 @@ def get_records():
     humidities          = curs.fetchall()
     conn.close()
 
-    return [temperatures, humidities, timezone, from_date_str, to_date_str, range_h_int]
+    return [temperatures, humidities, timezone, from_date_str, to_date_str, range_hours]
 
 def validate_date(d):
     try:

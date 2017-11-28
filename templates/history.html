@@ -58,7 +58,7 @@
       <div class="row">
       <div class="eleven columns">
         <div class="one column">
-                <a href="/">Live</a>
+            <a href="/">Live</a>
         </div>
         <form id="range_select" action = "/history" method="GET">  
           <input type="hidden" class="timezone" name="timezone" />      
@@ -74,7 +74,7 @@
           <div class="one column">
             <input type="radio" name="range_h" value="24" id="radio_24" /><label for="radio_24">24hrs</label>
           </div>
-        </form>          
+        </form>   
       </div>
     </div>
     
@@ -82,7 +82,9 @@
 
     <div class='row' id='plotly-plot'></div>
 
+    <div class='debug'>
     {{ debug }}
+    </div>
 
   </body>
       
