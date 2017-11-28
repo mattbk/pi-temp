@@ -135,6 +135,8 @@ def history():
                                             graphJSON = graphJSON,
                                             total_minutes = sum(streak_minutes),
                                             range_hours = range_hours,
+                                            from_date = from_date_str, 
+ 											to_date = to_date_str,
                                             debug = streak_minutes,
                                             )
 
