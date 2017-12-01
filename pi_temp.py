@@ -128,7 +128,7 @@ def history():
         timestep_minutes = 1
     # Calculate minutes for each streak
     streak_minutes = streak_lengths(time_series_temperature_values)*timestep_minutes
-    streak_minutes = [x-1 for x in streak_minutes] #Turn this into a duration
+    streak_minutes = [x-1 for x in streak_minutes if x > 2] #Turn this into a duration, filter out < 2
 
     # Send output to page
     return render_template("history.html",  timezone = timezone,
