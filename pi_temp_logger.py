@@ -37,6 +37,11 @@ No text output. Two new records are inserted in the database when the script is 
 import sqlite3
 import sys
 import Adafruit_DHT
+import ConfigParser
+
+config = ConfigParser.ConfigParser()
+config.read("config.ini")
+sensor = config.get('SENSOR','TYPE') 
 
 def log_values(sensor_id, temp, hum):
 	conn=sqlite3.connect('/home/pi/Documents/pi-temp/pi_temp.db')  #It is important to provide an
@@ -51,7 +56,7 @@ def log_values(sensor_id, temp, hum):
 	conn.commit()
 	conn.close()
 
-humidity, temperature = Adafruit_DHT.read_retry(Adafruit_DHT.AM2302, 17)
+humidity, temperature = Adafruit_DHT.read_retry(getattr(Adafruit_DHT,sensor), 17)
 temperature = temperature * 9/5.0 + 32
 # If you don't have a sensor but still wish to run this program, comment out all the 
 # sensor related lines, and uncomment the following lines (these will produce random

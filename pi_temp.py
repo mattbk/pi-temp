@@ -51,21 +51,22 @@ import arrow
 import json
 import plotly
 import sqlite3
+import sys
+import Adafruit_DHT
 import ConfigParser
 from plotly.graph_objs import *
 
 config = ConfigParser.ConfigParser()
 config.read("config.ini")
-port = config.getint('DEFAULT', 'PORT') 
+port = config.getint('SERVER', 'PORT') 
+sensor = config.get('SENSOR','TYPE') 
 
 app = Flask(__name__)
 app.debug = True # Make this False if you are no longer debugging
 
 @app.route("/")
 def lab_temp():
-    import sys
-    import Adafruit_DHT
-    humidity, temperature = Adafruit_DHT.read_retry(Adafruit_DHT.AM2302, 17)
+    humidity, temperature = Adafruit_DHT.read_retry(getattr(Adafruit_DHT,sensor), 17) 
     temperature = temperature * 9/5.0 + 32
     if humidity is not None and temperature is not None:
         return render_template("live.html",temp=temperature,hum=humidity)
