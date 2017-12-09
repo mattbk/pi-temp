@@ -51,7 +51,12 @@ import arrow
 import json
 import plotly
 import sqlite3
+import ConfigParser
 from plotly.graph_objs import *
+
+config = ConfigParser.ConfigParser()
+config.read("config.ini")
+port = config.getint('DEFAULT', 'PORT') 
 
 app = Flask(__name__)
 app.debug = True # Make this False if you are no longer debugging
@@ -217,4 +222,4 @@ def validate_date(d):
         return False
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=8080)
+    app.run(host='0.0.0.0', port=port)
