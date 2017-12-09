@@ -40,7 +40,7 @@ import Adafruit_DHT
 import ConfigParser
 
 config = ConfigParser.ConfigParser()
-config.read("config.ini")
+config.read('/home/pi/Documents/pi-temp/config.ini')
 sensor = config.get('SENSOR','TYPE') 
 
 def log_values(sensor_id, temp, hum):
