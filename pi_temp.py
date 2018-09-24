@@ -57,7 +57,10 @@ import ConfigParser
 from plotly.graph_objs import *
 
 config = ConfigParser.ConfigParser()
-config.read("config.ini")
+config.read("/home/pi/Documents/pi-temp/config.ini") #It is important to provide an
+							     #absolute path to the config
+							     #file, otherwise rc.local won't be
+							     #able to find it!
 port = config.getint('SERVER', 'PORT') 
 sensor = config.get('SENSOR','TYPE') 
 
