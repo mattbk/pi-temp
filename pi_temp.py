@@ -57,7 +57,7 @@ import ConfigParser
 from plotly.graph_objs import *
 
 config = ConfigParser.ConfigParser()
-config.read("/home/pi/Documents/pi-temp/config.ini") #It is important to provide an
+config.read("/home/pi/pi-temp/config.ini") #It is important to provide an
 							     #absolute path to the config
 							     #file, otherwise rc.local won't be
 							     #able to find it!
@@ -208,7 +208,7 @@ def get_records():
         difference      = (arrow.get(to_date_obj, timezone) - arrow.get(from_date_obj, timezone))
         range_hours     = (difference.total_seconds()) / 3600
 
-    conn                = sqlite3.connect('/home/pi/Documents/pi-temp/pi_temp.db')
+    conn                = sqlite3.connect('/home/pi/pi-temp/pi_temp.db')
     curs                = conn.cursor()
     curs.execute("SELECT * FROM temperatures WHERE rDateTime BETWEEN ? AND ?", (from_date_utc.format('YYYY-MM-DD HH:mm'), to_date_utc.format('YYYY-MM-DD HH:mm')))
     temperatures        = curs.fetchall()
