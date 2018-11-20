@@ -44,7 +44,7 @@ The user can explore historical data to Plotly for visualisation and processing.
  // 10. END
 '''
 
-from flask import Flask, request, render_template
+from flask import Flask, request, render_template, flash
 import time
 import datetime
 import arrow
@@ -66,6 +66,7 @@ sensor = config.get('SENSOR','TYPE')
 
 app = Flask(__name__)
 app.debug = True # Make this False if you are no longer debugging
+app.secret_key = b'_5#y2L"F4fdfdfdfdfQ8z\n\xec]/'
 
 @app.route("/")
 def lab_temp():
@@ -90,6 +91,10 @@ def history():
         local_timedate_series = arrow.get(record[0], "YYYY-MM-DD HH:mm").to(timezone)
         time_series_adjusted_temperatures.append(local_timedate_series.format('YYYY-MM-DD HH:mm'))
         time_series_temperature_values.append(round(record[2],2))
+    
+    flash(local_timedate_series)
+    flash(time_series_adjusted_temperatures)
+    flash(temperatures) 
 
     for record in humidities:
         local_timedate_series = arrow.get(record[0], "YYYY-MM-DD HH:mm").to(timezone)
@@ -142,6 +147,8 @@ def history():
     streak_minutes = streak_lengths(time_series_temperature_values)*timestep_minutes
     streak_minutes = [x-1 for x in streak_minutes if x > 2] #Turn this into a duration, filter out < 2
 
+    flash(streak_minutes)
+
     # Send output to page
     return render_template("history.html",  timezone = timezone,
                                             graphJSON = graphJSON,
@@ -149,7 +156,6 @@ def history():
                                             range_hours = range_hours,
                                             from_date = from_date_str, 
  											to_date = to_date_str,
-                                            debug = streak_minutes,
                                             )
 
 # Calculate streak lengths. Based on https://stackoverflow.com/a/33403822/2152245.
