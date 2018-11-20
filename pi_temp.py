@@ -132,7 +132,10 @@ def history():
 
     ## Duration of significant heat increases
     # Timestep from raw database values for temperature
-    timestep_minutes = int(round((datetime.datetime.strptime(temperatures[1][0], "%Y-%m-%d %H:%M:%S")-datetime.datetime.strptime(temperatures[0][0], "%Y-%m-%d %H:%M:%S")).seconds/60))
+    try:
+        timestep_minutes = int(round((datetime.datetime.strptime(temperatures[1][0], "%Y-%m-%d %H:%M:%S")-datetime.datetime.strptime(temperatures[0][0], "%Y-%m-%d %H:%M:%S")).seconds/60))
+    except:
+        timestep_minutes = 1
     if (timestep_minutes == 0):
         timestep_minutes = 1
     # Calculate minutes for each streak
