@@ -40,11 +40,11 @@ import Adafruit_DHT
 import ConfigParser
 
 config = ConfigParser.ConfigParser()
-config.read('/home/pi/Documents/pi-temp/config.ini')
+config.read('/home/pi/pi-temp/config.ini')
 sensor = config.get('SENSOR','TYPE') 
 
 def log_values(sensor_id, temp, hum):
-	conn=sqlite3.connect('/home/pi/Documents/pi-temp/pi_temp.db')  #It is important to provide an
+	conn=sqlite3.connect('/home/pi/pi-temp/pi_temp.db')  #It is important to provide an
 							     #absolute path to the database
 							     #file, otherwise Cron won't be
 							     #able to find it!
