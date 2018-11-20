@@ -49,9 +49,9 @@ def log_values(sensor_id, temp, hum):
 							     #file, otherwise Cron won't be
 							     #able to find it!
 	curs=conn.cursor()
-	curs.execute("""INSERT INTO temperatures values(datetime(CURRENT_TIMESTAMP, 'localtime'),
+	curs.execute("""INSERT INTO temperatures values(datetime(CURRENT_TIMESTAMP),
          (?), (?))""", (sensor_id,temp))
-	curs.execute("""INSERT INTO humidities values(datetime(CURRENT_TIMESTAMP, 'localtime'),
+	curs.execute("""INSERT INTO humidities values(datetime(CURRENT_TIMESTAMP),
          (?), (?))""", (sensor_id,hum))
 	conn.commit()
 	conn.close()
